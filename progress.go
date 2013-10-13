@@ -39,14 +39,14 @@ func New(out io.Writer, max int64) *ProgressBar {
 	}
 }
 
-// Complete returns the current number of times Increment() has been called.
-func (pb ProgressBar) Complete() int64 {
+// Progress returns the current number of times Increment() has been called.
+func (pb ProgressBar) Progress() int64 {
 	return pb.count
 }
 
-// Incomplete returns the current number of times Increment() needs to be
-// called to reach completion.
-func (pb ProgressBar) Incomplete() int64 {
+// Left returns the current number of times Increment() needs to be called
+// to reach completion.
+func (pb ProgressBar) Left() int64 {
 	return pb.max - pb.count
 }
 
@@ -55,14 +55,14 @@ func (pb ProgressBar) Completed() bool {
 	return pb.count >= pb.max
 }
 
-// CurrentCompletion returns the current ratio of completion.
-func (pb *ProgressBar) CurrentCompletion() float64 {
+// Ratio returns the current ratio of completion.
+func (pb *ProgressBar) Ratio() float64 {
 	return float64(pb.count) / float64(pb.max)
 }
 
-// CurrentPercentage returns the current percentage of completion.
-func (pb *ProgressBar) CurrentPercentage() int {
-	return int(pb.CurrentCompletion() * 100)
+// Percent returns the current percent of completion.
+func (pb *ProgressBar) Percent() int {
+	return int(pb.Ratio() * 100)
 }
 
 // Increment atomically increments the progress of the bar by 1.
@@ -75,24 +75,28 @@ func (pb *ProgressBar) IncrementBy(x int64) {
 	atomic.AddInt64(&pb.count, x)
 }
 
-// Draw() atomically writes the bar to the provided io.Writer.
+// Draw atomically writes the bar to the provided io.Writer.
 func (pb *ProgressBar) Draw() (err error) {
 	pb.mu.Lock()
 	defer pb.mu.Unlock()
 
-	ratio := pb.CurrentCompletion()
-	currentPercent := int(ratio * 100)
-	percentStr := fmt.Sprintf(" %d%%", currentPercent)
+	ratio := pb.Ratio()
+	percent := int(ratio * 100)
+	percentStr := fmt.Sprintf(" %d%%", percent)
 
 	// Build the bar
 	complete := ratio * barWidth
 	incomplete := barWidth - complete
 	bar := barBegin
-	for i := float64(0); i < complete; i++ {
-		bar += barComplete
-	}
-	for i := float64(0); i < incomplete; i++ {
-		bar += barIncomplete
+	if percent >= 100 {
+		bar += "##############################################################################"
+	} else {
+		for i := float64(0); i < complete; i++ {
+			bar += barComplete
+		}
+		for i := float64(0); i < incomplete; i++ {
+			bar += barIncomplete
+		}
 	}
 	bar += barEnd
 

@@ -1,14 +1,14 @@
-# progress
+# progress [![Build Status](https://secure.travis-ci.org/jzelinskie/progress.png)](http://travis-ci.org/jzelinskie/progress)
 
 progress is a package to easily generate a progress bar for your CLI application.
 Being written in Go, it makes sense that it is made to be safely usable by multiple goroutines.
 
 
-## Docs
+## docs
 
 Check out the docs at [godoc.org](http://godoc.org/github.com/jzelinskie/progress)
 
-## Example
+## example
 
 ```go
 package main
